@@ -26,6 +26,7 @@ let posts = [
 
 class App extends Component {
 state = {posts: posts, myName: 'Сергей'};
+
 addMessage = message => {
   this.state.posts.push({
    key:posts.length + 1,
@@ -36,6 +37,26 @@ addMessage = message => {
     posts: this.state.posts
   })
 }
+
+handleSubmit = (event) =>{
+  this.props.socket(
+    JSON.stringify({
+      authorNmae: this.state.myName,
+      content: message
+  })
+    
+  )
+}
+
+elementDid(){
+  this.props.socket.onmessage = (event) => {
+    if(event.data.type === 'message'){
+      this.addMessage(event.data);
+    }
+    console.log("Getted:" + event.data);
+  };
+}
+
 render(){
   return (
     <div className="App">
