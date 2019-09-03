@@ -5,57 +5,52 @@ import Form from './elements/Form';
 import MessagesList from './elements/MessagesList';
 
 
-let posts = [
-  {
-    key:1,
-    authorName: "Семен",
-    content: "Привет!"
-  },
-  {
-    key:2,
-    authorName: "Зина",
-    content: "Привет в ответ!"
-  },
-  {
-    key:3,
-    authorName: "Игорь",
-    content: "Я в теме"
-  }
-]
-
 
 class App extends Component {
-state = {posts: posts, myName: 'Сергей'};
+state = {posts: [], myName: undefined, socket: undefined};
+
 
 addMessage = message => {
   this.state.posts.push({
-   key:posts.length + 1,
-   authorName: this.state.myName,
-   content: message
+   key: message.key,
+   authorName: message.authorName,
+   content: message.content
  })
   this.setState({
     posts: this.state.posts
   })
 }
 
-handleSubmit = (event) =>{
-  this.props.socket(
+handleSubmit = message =>{
+  this.state.socket.send(
     JSON.stringify({
-      authorNmae: this.state.myName,
+      authorName: this.state.myName,
       content: message
-  })
-    
+    })
   )
 }
 
-elementDid(){
-  this.props.socket.onmessage = (event) => {
-    if(event.data.type === 'message'){
-      this.addMessage(event.data);
+handleSetName = name => {
+  this.setState({
+    myName: name
+  })
+  this.state.socket = new WebSocket(this.props.uri);
+
+  this.state.socket.onmessage = event => {
+    const message = JSON.parse(event.data);
+  //  console.log('sss' + event.data);
+    if(message.type === 'message'){
+      this.addMessage(message.message);
+    }
+    else if (message.type === 'messages') {
+      this.setState({
+        posts: message.messages
+      })
     }
     console.log("Getted:" + event.data);
   };
 }
+
 
 render(){
   return (
@@ -65,8 +60,13 @@ render(){
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
-        <Form addMessage={this.addMessage}/>
-        <MessagesList posts={this.state.posts} />
+        {!this.state.myName ? <Form addMessage={this.handleSetName}/> :
+          <div>
+          <Form addMessage={this.handleSubmit}/>
+          <MessagesList posts={this.state.posts} />
+          </div>
+        }
+
       </header>
     </div>
   );
