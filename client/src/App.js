@@ -7,7 +7,7 @@ import MessagesList from './elements/MessagesList';
 
 
 class App extends Component {
-state = {posts: [], myName: undefined, socket: undefined};
+state = {posts: [], myName: undefined, socket: undefined, room: undefined};
 
 
 addMessage = message => {
@@ -51,6 +51,11 @@ handleSetName = name => {
   };
 }
 
+handleSetRoom = room => {
+  this.setState({
+    room: room
+  })
+}
 
 render(){
   return (
@@ -61,10 +66,12 @@ render(){
           Edit <code>src/App.js</code> and save to reload.
         </p>
         {!this.state.myName ? <Form addMessage={this.handleSetName}/> :
+          !this.state.room ? <Form addMessage={this.handleSetRoom}/> :
           <div>
           <Form addMessage={this.handleSubmit}/>
           <MessagesList posts={this.state.posts} />
           </div>
+
         }
 
       </header>
